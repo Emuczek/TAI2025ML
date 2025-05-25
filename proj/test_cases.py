@@ -8,9 +8,9 @@ def run_experiment(tokenization, feature_repr, strategy, budget):
     csv_path = "data/enron_dataset.csv"
     df = load_enron_csv_dataset(csv_path, max_rows=1000)
 
-    if tokenization == "lemma_stop":
+    if tokenization == "lemmatization+stopword":
         tokenizer = spacy_lemmatizer
-    elif tokenization == "simple":
+    elif tokenization == "whitespace":
         tokenizer = simple_tokenizer
 
     X_vect, vectorizer = extract_features(df['text'], tokenizer, vectorizer_type=feature_repr)
@@ -19,6 +19,9 @@ def run_experiment(tokenization, feature_repr, strategy, budget):
     metrics = evaluate(preds, df['label'].to_numpy())
 
     return metrics
+
+def show_result(result_filename):
+    print(np.load(result_filename))
 
 
 if __name__ == "__main__":
@@ -38,8 +41,11 @@ if __name__ == "__main__":
 
     os.makedirs("test_results", exist_ok=True)
 
-    for tid, (tokenization, feature_repr, strategy, budget) in test_cases.items():
-        print(f"Running {tid}...")
-        result = run_experiment(tokenization, feature_repr, strategy, budget)
-        save_path = os.path.join("test_results", f"{tid}.npy")
-        np.save(save_path, result)
+    # for tid, (tokenization, feature_repr, strategy, budget) in test_cases.items():
+    #     print(f"Running {tid}...")
+    #     result = run_experiment(tokenization, feature_repr, strategy, budget)
+    #     save_path = os.path.join("test_results", f"{tid}.npy")
+    #     np.save(save_path, result)
+
+    for test_result_file in os.listdir("test_results"):
+        print(np.load(test_result_file))
