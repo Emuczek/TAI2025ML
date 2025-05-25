@@ -47,5 +47,6 @@ if __name__ == "__main__":
     #     save_path = os.path.join("test_results", f"{tid}.npy")
     #     np.save(save_path, result)
 
-    for test_result_file in os.listdir("test_results"):
-        print(np.load(test_result_file))
+    for test_result_file in os.listdir(rf"test_results"):
+        path = os.path.join("test_results", test_result_file)
+        print(np.load(path, allow_pickle=True))
