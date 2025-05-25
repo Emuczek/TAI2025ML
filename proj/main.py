@@ -54,7 +54,7 @@ def extract_features(texts, tokenizer, vectorizer_type='tfidf'):
         vectorizer = CountVectorizer(tokenizer=tokenizer)
     return vectorizer.fit_transform(texts), vectorizer
 
-def simulate_online_learning(X, y, budget=0.2):
+def simulate_online_learning(X, y, budget=0.2, strategy="margin"):
     clf = PassiveAggressiveClassifier(max_iter=1, tol=1e-3, random_state=42)
     queried = 0
     n = X.shape[0]
@@ -64,8 +64,7 @@ def simulate_online_learning(X, y, budget=0.2):
     queried_mask = []
 
     for i in range(n):
-        x_i = X[i]
-
+        x_i = X[i].reshape(1, -1)  # Ensure 2D for sklearn
         if queried == 0:
             clf.partial_fit(x_i, [y[i]], classes=[0, 1])
             pred = clf.predict(x_i)
@@ -77,14 +76,21 @@ def simulate_online_learning(X, y, budget=0.2):
         pred = clf.predict(x_i)
         predictions.append(pred[0])
 
-        if hasattr(clf, 'decision_function'):
-            confidence = abs(clf.decision_function(x_i)[0])
-        else:
-            confidence = 1
+        query = False
 
-        query_probability = 1 / (1 + confidence)
-
-        if queried < max_queries and random.random() < query_probability:
+        if queried < max_queries:
+            if strategy == "random":
+                query = random.random() < (budget)
+            elif strategy == "margin":
+                if hasattr(clf, "decision_function"):
+                    margin = abs(clf.decision_function(x_i)[0])
+                    query_probability = 1 / (1 + margin)
+                    query = random.random() < query_probability
+                else:
+                    query = False
+            elif strategy == "oracle":
+                query = True 
+        if query:
             clf.partial_fit(x_i, [y[i]])
             queried += 1
             queried_mask.append(True)
@@ -95,6 +101,7 @@ def simulate_online_learning(X, y, budget=0.2):
             print(f"Processed {i+1}/{n} samples...", file=sys.stderr)
 
     return predictions, queried_mask
+
 
 def evaluate(preds, y_true):
     return {
