@@ -1,6 +1,4 @@
 # spam_classifier_project.py
-
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,15 +6,14 @@ import sys
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import PassiveAggressiveClassifier
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
 import spacy
-import string
 import random
-from collections import Counter
+
 
 nltk.download("punkt")
 nltk.download("stopwords")
@@ -64,7 +61,7 @@ def simulate_online_learning(X, y, budget=0.2, strategy="margin"):
     queried_mask = []
 
     for i in range(n):
-        x_i = X[i].reshape(1, -1)  # Ensure 2D for sklearn
+        x_i = X[i].reshape(1, -1)
         if queried == 0:
             clf.partial_fit(x_i, [y[i]], classes=[0, 1])
             pred = clf.predict(x_i)
