@@ -14,7 +14,6 @@ import nltk
 import spacy
 import random
 
-
 nltk.download("punkt")
 nltk.download("stopwords")
 spacy_model = spacy.load("en_core_web_sm")
