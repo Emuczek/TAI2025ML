@@ -10,9 +10,7 @@ from sklearn.model_selection import StratifiedKFold
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split, cross_val_score
 
 def run_state_of_art(tokenization, feature_repr, tid):
@@ -43,11 +41,11 @@ def run_state_of_art(tokenization, feature_repr, tid):
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     
     for train_index, test_index in skf.split(X_vect, y):
-        os.makedirs(f"test_results_state_of_art/fold_{fold_no}", exist_ok=True)
         X_train, X_test, y_train, y_test = train_test_split(X_vect, y, test_size=0.2, random_state=42)
         clf = MultinomialNB()
 
-        cv_scores = cross_val_score(clf, X_vect, y, cv=5, scoring='accuracy')
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        cv_scores = cross_val_score(clf, X_vect, y, cv=skf, scoring='accuracy')
 
         print("Cross-validation scores:", cv_scores)
         print("Mean CV accuracy:", np.mean(cv_scores))
@@ -66,8 +64,9 @@ def run_state_of_art(tokenization, feature_repr, tid):
 if __name__ == "__main__":
     test_cases = {
     "T1": ("lemmatization+stopword", "tfidf"),
-    "T2": ("whitespace", "tf"),
-    "T3": ("lemmatization+stopword", "tfidf"),
+    "T2": ("lemmatization+stopword", "tf"),
+    "T3": ("whitespace", "tf"),
+    "T4": ("whitespace", "tf"),
     }
     for tid, (tokenization, feature_repr) in test_cases.items():
         run_state_of_art(tokenization, feature_repr, tid)

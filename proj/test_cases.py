@@ -15,10 +15,6 @@ def run_experiment(X, y, tokenization, feature_repr, strategy, budget):
     metrics = evaluate(preds, y)
     return metrics
 
-
-def show_result(result_filename):
-    print(np.load(result_filename))
-
 if __name__ == "__main__":
     test_cases = {
     "T1": ("lemmatization+stopword", "tfidf", "margin", 0.10),
@@ -39,7 +35,7 @@ if __name__ == "__main__":
     df = load_enron_csv_dataset(csv_path, max_rows=1000)
     X = df['text']
     y = df['label']
-    
+
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     
     fold_metrics = []
@@ -69,9 +65,3 @@ if __name__ == "__main__":
 
 accuracies = [m['accuracy'] for m in fold_metrics]
 print(f"Cross-validated accuracy: {np.mean(accuracies):.4f}")
-    
-
-
-
-
-  
