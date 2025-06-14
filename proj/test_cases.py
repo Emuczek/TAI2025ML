@@ -39,10 +39,10 @@ if __name__ == "__main__":
     df = load_enron_csv_dataset(csv_path, max_rows=1000)
     X = df['text']
     y = df['label']
+    
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     
     fold_metrics = []
-
     for tid, (tokenization, feature_repr, strategy, budget) in test_cases.items():
         fold_no = 0
         os.makedirs(f"test_results/{tid}", exist_ok=True)
