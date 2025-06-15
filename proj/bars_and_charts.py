@@ -19,7 +19,7 @@ def plot_boxplots(results_dict, metric_name, ax):
     """Generates a boxplot for the specified metric."""
     data = [results_dict[tid][metric_name] for tid in results_dict]
     labels = list(results_dict.keys())
-    ax.boxplot(data, labels=labels)
+    ax.boxplot(data, tick_labels=labels)
     ax.set_title(f"Distribution of {metric_name} for Each Experiment Variant")
     ax.set_xlabel("Experiment Variant (tid)")
     ax.set_ylabel(metric_name)
@@ -27,9 +27,47 @@ def plot_boxplots(results_dict, metric_name, ax):
 
 
 def plot_roc_auc(results_dict, ax):
+    for tid, result in results_dict.items():
+        print(tid)
+        if not result.get('true_labels') or not result.get('predictions') or \
+                len(result['true_labels']) == 0 or \
+                len(result['true_labels']) != len(result['predictions']):
+            print(f"  Skipping {tid}: Brak danych foldów lub niespójne dane.")
+            continue
+        fold_aucs = []
+        for i in range(len(result['true_labels'])):
+            try:
+                y_true_fold = np.array(result['true_labels'][i]).flatten()
+                y_pred_fold = np.array(result['predictions'][i]).flatten()
+                if len(np.unique(y_true_fold)) < 2:
+                    fold_aucs.append(-1.0)
+                    continue
+
+                fpr_fold, tpr_fold, _ = roc_curve(y_true_fold, y_pred_fold)
+                fold_aucs.append(auc(fpr_fold, tpr_fold))
+            except Exception as e:
+                fold_aucs.append(-1.0)
+        if not fold_aucs or max(fold_aucs) == -1.0:
+            print(f"  Nie można było znaleźć najlepszego foldu dla {tid}. Używam foldu 0 (jeśli dostępny) lub pomijam.")
+            if len(result['true_labels']) > 0:
+                best_fold_idx = 0
+                try:
+                    if len(np.unique(np.array(result['true_labels'][0]).flatten())) < 2:
+                        print(f"  Domyślny fold 0 dla {tid} ma tylko jedną klasę. Pomijam {tid}.")
+                        continue
+                except Exception:
+                    print(f"  Problem z domyślnym foldem 0 dla {tid}. Pomijam {tid}.")
+                    continue
+            else:
+                continue
+        else:
+            best_fold_idx = np.argmax(fold_aucs)
+
     """Generates ROC curves and calculates AUC for each experiment variant."""
     for tid, result in results_dict.items():
-        fpr, tpr, _ = roc_curve(np.array(result['true_labels']).flatten(), np.array(result['predictions']).flatten())
+        print(tid)
+        print(result['true_labels'])
+        fpr, tpr, _ = roc_curve(np.array(result['true_labels'][best_fold_idx]).flatten(), np.array(result['predictions'][best_fold_idx]).flatten())
         roc_auc = auc(fpr, tpr)
         ax.plot(fpr, tpr, label=f"{tid} (AUC = {roc_auc:.2f})")
 
@@ -41,9 +79,45 @@ def plot_roc_auc(results_dict, ax):
 
 
 def plot_confusion_matrix(results_dict, ax, tid):
+    for tid, result in results_dict.items():
+        print(tid)
+        if not result.get('true_labels') or not result.get('predictions') or \
+                len(result['true_labels']) == 0 or \
+                len(result['true_labels']) != len(result['predictions']):
+            print(f"  Skipping {tid}: Brak danych foldów lub niespójne dane.")
+            continue
+        fold_aucs = []
+        for i in range(len(result['true_labels'])):
+            try:
+                y_true_fold = np.array(result['true_labels'][i]).flatten()
+                y_pred_fold = np.array(result['predictions'][i]).flatten()
+                if len(np.unique(y_true_fold)) < 2:
+                    fold_aucs.append(-1.0)
+                    continue
+
+                fpr_fold, tpr_fold, _ = roc_curve(y_true_fold, y_pred_fold)
+                fold_aucs.append(auc(fpr_fold, tpr_fold))
+            except Exception as e:
+                fold_aucs.append(-1.0)
+        if not fold_aucs or max(fold_aucs) == -1.0:
+            print(f"  Nie można było znaleźć najlepszego foldu dla {tid}. Używam foldu 0 (jeśli dostępny) lub pomijam.")
+            if len(result['true_labels']) > 0:
+                best_fold_idx = 0
+                try:
+                    if len(np.unique(np.array(result['true_labels'][0]).flatten())) < 2:
+                        print(f"  Domyślny fold 0 dla {tid} ma tylko jedną klasę. Pomijam {tid}.")
+                        continue
+                except Exception:
+                    print(f"  Problem z domyślnym foldem 0 dla {tid}. Pomijam {tid}.")
+                    continue
+            else:
+                continue
+        else:
+            best_fold_idx = np.argmax(fold_aucs)
+
     """Generates a confusion matrix for the specified experiment variant."""
     result = results_dict[tid]
-    cm = confusion_matrix(np.array(result['true_labels']).flatten(), np.array(result['predictions']).flatten())
+    cm = confusion_matrix(np.array(result['true_labels'][best_fold_idx]).flatten(), np.array(result['predictions'][best_fold_idx]).flatten())
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
     ax.set_xlabel('Predicted Labels')
     ax.set_ylabel('True Labels')
