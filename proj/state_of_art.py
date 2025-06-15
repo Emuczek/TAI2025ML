@@ -15,7 +15,9 @@ from sklearn.model_selection import train_test_split, cross_val_score
 
 def run_state_of_art(tokenization, feature_repr, tid):
     csv_path = "data/enron_dataset.csv"
-    df = load_enron_csv_dataset(csv_path, max_rows=1000)
+
+    df = load_enron_csv_dataset(csv_path)
+
     tokenizer = None
     if tokenization == "lemmatization+stopword":
         tokenizer = spacy_lemmatizer
@@ -23,32 +25,18 @@ def run_state_of_art(tokenization, feature_repr, tid):
         tokenizer = simple_tokenizer
     else:
         raise ValueError(f"Unknown tokenization: {tokenization}")
+    
     X_vect, vectorizer= extract_features(df['text'], tokenizer, vectorizer_type=feature_repr)
     y = df['label']
 
     clf = MultinomialNB()
-
-    if tokenization == "lemmatization+stopword":
-        tokenizer = spacy_lemmatizer
-    elif tokenization == "whitespace":
-        tokenizer = simple_tokenizer
-    else:
-        raise ValueError(f"Unknown tokenization: {tokenization}")
-
     fold_metrics = []
-    fold_no = 0
 
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     
     for train_index, test_index in skf.split(X_vect, y):
-        X_train, X_test, y_train, y_test = train_test_split(X_vect, y, test_size=0.2, random_state=42)
-        clf = MultinomialNB()
-
-        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        cv_scores = cross_val_score(clf, X_vect, y, cv=skf, scoring='accuracy')
-
-        print("Cross-validation scores:", cv_scores)
-        print("Mean CV accuracy:", np.mean(cv_scores))
+        X_train, X_test = X_vect[train_index], X_vect[test_index]
+        y_train, y_test = y[train_index], y[test_index]
 
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
@@ -58,8 +46,8 @@ def run_state_of_art(tokenization, feature_repr, tid):
         save_path = os.path.join("test_results_state_of_art", f"{tid}.npy")
         np.save(save_path, metrics)
 
-    accuracies = [m['accuracy'] for m in fold_metrics]
-    print(f"Cross-validated accuracy: {np.mean(accuracies):.4f}")
+    # accuracies = [m['accuracy'] for m in fold_metrics]
+    # print(f"Cross-validated accuracy: {np.mean(accuracies):.4f}")
 
 if __name__ == "__main__":
     test_cases = {
@@ -69,6 +57,7 @@ if __name__ == "__main__":
     "T4": ("whitespace", "tf"),
     }
     for tid, (tokenization, feature_repr) in test_cases.items():
+        print(f"Processing {tid}")
         run_state_of_art(tokenization, feature_repr, tid)
 
 

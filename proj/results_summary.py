@@ -50,7 +50,7 @@ if __name__ == "__main__":
         ol_acc.append(round(sum(acc)/len(acc), 2))
         ol_f1.append(round(sum(f1)/len(f1), 2))
 
-    #     print(f"Test case {test_case}: \n Acccuracy: {round(sum(acc)/len(acc), 2)} +- {round(np.std(acc), 2)}, precission {round(sum(precision)/len(precision), 2)} +- {round(np.std(precision), 2)}, recall {round(sum(recall)/len(recall), 2)} +- {round(np.std(recall), 2)}, f1 score {round(sum(f1)/len(f1), 2)} +- {round(np.std(f1), 2)}")
+        print(f"Test case {test_case}: \n Acccuracy: {round(sum(acc)/len(acc), 2)} +- {round(np.std(acc), 2)}, precission {round(sum(precision)/len(precision), 2)} +- {round(np.std(precision), 2)}, recall {round(sum(recall)/len(recall), 2)} +- {round(np.std(recall), 2)}, f1 score {round(sum(f1)/len(f1), 2)} +- {round(np.std(f1), 2)}")
 
     # state of art
     for test_case in os.listdir("test_results_state_of_art"):
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         soa_acc.append(test_case_results['accuracy'])
         soa_f1.append(test_case_results['f1'])
 
-        # print(f"Test case {test_case}: \n Acccuracy: {round(sum(acc)/len(acc), 2)} +- {round(np.std(acc), 2)}, precission {round(sum(precision)/len(precision), 2)} +- {round(np.std(precision), 2)}, recall {round(sum(recall)/len(recall), 2)} +- {round(np.std(recall), 2)}, f1 score {round(sum(f1)/len(f1), 2)} +- {round(np.std(f1), 2)}")
+        print(f"Test case {test_case}: \n Acccuracy: {round(sum(acc)/len(acc), 2)} +- {round(np.std(acc), 2)}, precission {round(sum(precision)/len(precision), 2)} +- {round(np.std(precision), 2)}, recall {round(sum(recall)/len(recall), 2)} +- {round(np.std(recall), 2)}, f1 score {round(sum(f1)/len(f1), 2)} +- {round(np.std(f1), 2)}")
 
     # test for accuracy 
     stat, p_value = mannwhitneyu(ol_acc, soa_acc, alternative='two-sided')
